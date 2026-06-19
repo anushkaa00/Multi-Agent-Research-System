@@ -2,8 +2,10 @@ import streamlit as st
 from pipeline import run_research_pipeline
 from docx import Document
 from io import BytesIO
+import json
+import os
 
-def create_word_file(report, feedback):
+def create_word_file(topic, report, feedback):
 
     doc = Document()
 
@@ -33,10 +35,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-#history
+# ----------------------------------------
+# LOAD HISTORY
+# ----------------------------------------
+
 if "history" not in st.session_state:
-    st.session_state.history = []
-    
+
+    if os.path.exists("data/history.json"):
+
+        with open(
+            "data/history.json",
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            st.session_state.history = json.load(f)
+
+    else:
+
+        st.session_state.history = []
+
+if "selected_chat" not in st.session_state:
+    st.session_state.selected_chat = None
+
 # --------------------------------------------------
 # CUSTOM CSS
 # --------------------------------------------------
@@ -124,6 +145,47 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
+
+# ----------------------------------------
+# SIDEBAR
+# ----------------------------------------
+
+with st.sidebar:
+
+    st.title("🤖 InfoBot")
+
+    st.divider()
+
+    if st.button(
+        "➕ New Research",
+        use_container_width=True
+    ):
+
+        st.session_state.selected_chat = None
+        st.rerun()
+
+    st.divider()
+
+    st.subheader("History")
+
+    if not st.session_state.history:
+
+        st.caption("No research history yet")
+
+    else:
+
+        for idx, item in enumerate(
+            reversed(st.session_state.history)
+        ):
+
+            if st.button(
+                f"📄 {item['topic'][:30]}",
+                key=f"history_{idx}",
+                use_container_width=True
+            ):
+
+                st.session_state.selected_chat = item
+                st.rerun()
 
 # --------------------------------------------------
 # HERO SECTION
@@ -235,6 +297,33 @@ if generate:
     report = result.get("report", "")
     feedback = result.get("feedback", "")
 
+    new_entry = {
+    "topic": topic,
+    "report": report,
+    "feedback": feedback
+}
+
+    if not any(
+        item["topic"] == topic
+        for item in st.session_state.history
+    ):
+
+        st.session_state.history.append(
+            new_entry
+    )
+
+    with open(
+        "data/history.json",
+        "w",
+         encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            st.session_state.history,
+            f,
+            indent=4
+    )
+
     st.markdown("<br>", unsafe_allow_html=True)
 
     tab1, tab2 = st.tabs(
@@ -283,6 +372,38 @@ if generate:
 
         st.markdown(feedback)
 
+# ----------------------------------------
+# VIEW PREVIOUS CHAT
+# ----------------------------------------
+
+if st.session_state.selected_chat:
+
+    old = st.session_state.selected_chat
+
+    st.divider()
+
+    st.markdown(
+        f"## 📂 {old['topic']}"
+    )
+
+    tab1, tab2 = st.tabs(
+        [
+            "📄 Research Report",
+            "🧠 Critic Review"
+        ]
+    )
+
+    with tab1:
+
+        st.markdown(
+            old["report"]
+        )
+
+    with tab2:
+
+        st.markdown(
+            old["feedback"]
+        )
 
 # --------------------------------------------------
 # FOOTER
