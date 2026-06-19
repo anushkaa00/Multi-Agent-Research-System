@@ -1,0 +1,48 @@
+# LLM & OpenAI
+openai
+langchain
+langchain-core
+langchain-openai
+langchain-community
+# Agent Framework
+langgraph
+
+# Search Tool
+tavily-python
+
+# Web Scraping
+beautifulsoup4
+requests
+lxml
+
+# Environment Variables
+python-dotenv
+
+# Data Validation
+pydantic
+
+# Token Counting
+tiktoken
+
+# Async Support
+aiohttp
+
+# Utilities
+numpy
+pandas
+
+# Optional Memory & Vector Store
+chromadb
+
+# Logging & Monitoring
+langsmith
+
+# API Backend (if needed)
+fastapi
+uvicorn
+
+# Frontend (if using Streamlit instead of FastAPI UI)
+streamlit
+
+langchain-hyperbrowser
+langchain-mistralai
